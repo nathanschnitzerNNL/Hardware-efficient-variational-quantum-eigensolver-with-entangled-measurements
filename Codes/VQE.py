@@ -22,7 +22,6 @@ from qiskit.algorithms.variational_algorithm import VariationalResult
 from qiskit.algorithms.minimum_eigen_solvers.minimum_eigen_solver import MinimumEigensolver, MinimumEigensolverResult
 from qiskit.algorithms.exceptions import AlgorithmError
 import networkx as nx
-from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +110,7 @@ class VQE(MinimumEigensolver):
         self._Groups = Groups
         self._Measurements = Measurements
         self._layout = layout
+        self._prob2Exp = []
 
         self._eval_count = 0
         self._callback = callback
@@ -250,6 +250,7 @@ class VQE(MinimumEigensolver):
         self._diagonals, self._factors = probability2expected(self._coeff, self._label, self._Groups,
                                                               self._Measurements)
 
+
         return circuits
 
     def number_cnots(self, operator=None):
@@ -307,7 +308,7 @@ class VQE(MinimumEigensolver):
 
         ExpectedValue = 0
         for j in range(len(probabilities)):
-            ExpectedValue += np.sum((self._prob2Exp[j] * self._factors[j][:, None]) @ probabilities[j])
+            ExpectedValue += np.sum((self._diagonals[j].dot(self._factors[j][0])) @ probabilities[j])
 
         self.energies.append(ExpectedValue)
 
@@ -373,7 +374,6 @@ class VQE(MinimumEigensolver):
                     'optimizer_evals'
                     'optimizer_time'
         """
-
         operator = self._check_operator(operator)
 
         self._expect_op = self.construct_expectation(self._ansatz_params, operator)
@@ -481,7 +481,7 @@ class VQE(MinimumEigensolver):
         else:
             if not gradient_fn:
                 gradient_fn = self._gradient
-
+    
         logger.info("Starting optimizer.\nbounds=%s\ninitial point=%s", bounds, initial_point)
         opt_params, opt_val, num_optimizer_evals = optimizer.optimize(nparms, cost_fn, variable_bounds=bounds,
                                                                       initial_point=initial_point,
