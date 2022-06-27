@@ -32,29 +32,20 @@ from IPython.display import display, clear_output
 
 IBMQ.load_account()
 #provider      = IBMQ.get_provider(hub='ibm-q-csic', group='internal', project='iff-csic')
-provider = IBMQ.get_provider(hub='ibm-q', group='open', project='main')
-# backend_exp   = provider.get_backend('ibmq_paris')
-backend_exp   = provider.get_backend('ibm_nairobi')
+provider = IBMQ.get_provider(hub='ibm-q-afrl', group='air-force-lab', project='quantum-sim')
+backend_exp   = provider.get_backend('ibm_perth')
+#backend_exp   = provider.get_backend('ibm_nairobi')
 backend = FakeMontreal()
 #backend = FakeBrooklyn()
-#backend_exp   = provider.get_backend('ibm_oslo')
-#WC_exp        = backend_exp.configuration().coupling_map
-WC_exp = get_backend_connectivity(backend)
+WC_exp        = backend_exp.configuration().coupling_map
+#WC_exp = get_backend_connectivity(backend)
 NUM_SHOTS = 2**13  # Number of shots for each circuit
 
-#quantum_instance = QuantumInstance( backend_exp, shots = NUM_SHOTS )
+quantum_instance = QuantumInstance( backend_exp, shots = NUM_SHOTS )
 
-backend_hpc = provider.get_backend('ibmq_qasm_simulator')
-backed_simulation = provider.get_backend('simulator_statevector')
-simulator = Aer.get_backend('aer_simulator')  # Backend for simulation
+coupling_map = backend_exp.configuration().coupling_map
 
-device = QasmSimulator.from_backend(backend)
-coupling_map = device.configuration().coupling_map
-noise_model = NoiseModel.from_backend(device)
-basis_gates = noise_model.basis_gates
-
-backed_calculations = simulator
-quantum_instance = QuantumInstance(backend=backed_calculations, coupling_map=coupling_map, noise_model=noise_model, basis_gates=basis_gates, shots=NUM_SHOTS)
+quantum_instance = QuantumInstance(backend=backend_exp, coupling_map=coupling_map, shots=NUM_SHOTS)
 
 molecule = 'Li 0.0 0.0 0.0; H 0.0 0.0 1.5474'
 #driver = PySCFDriver(molecule)
